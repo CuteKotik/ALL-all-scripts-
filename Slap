@@ -39,7 +39,10 @@
         if isFollowing then
             local target = Players:FindFirstChild(targetName)
             if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-                player.Character:SetPrimaryPartCFrame(target.Character.HumanoidRootPart.CFrame)
+                local targetCFrame = target.Character.HumanoidRootPart.CFrame
+                local forwardVector = targetCFrame.LookVector
+                local newPosition = targetCFrame.Position + forwardVector * 5 -- Телепортируем на 5 единиц перед лицом
+                player.Character:SetPrimaryPartCFrame(CFrame.new(newPosition, newPosition + forwardVector))
             end
         end
     end)
