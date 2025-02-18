@@ -1,0 +1,82 @@
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local UserInputService = game:GetService("UserInputService")
+    local player = Players.LocalPlayer
+    local targetName = "Tarrrki"
+    local gui = Instance.new("ScreenGui", player.PlayerGui)
+    local frame = Instance.new("Frame", gui)
+    local onButton = Instance.new("TextButton", frame)
+    local offButton = Instance.new("TextButton", frame)
+    local isFollowing = false
+
+    frame.Size = UDim2.new(0, 200, 0, 100)
+    frame.Position = UDim2.new(0.5, -100, 0.5, -50)
+    frame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    frame.Active = true
+    frame.Draggable = true
+
+    onButton.Size = UDim2.new(0, 80, 0, 50)
+    onButton.Position = UDim2.new(0, 10, 0, 25)
+    onButton.Text = "ON"
+    onButton.BackgroundColor3 = Color3.new(0, 1, 0)
+
+    offButton.Size = UDim2.new(0, 80, 0, 50)
+    offButton.Position = UDim2.new(0, 110, 0, 25)
+    offButton.Text = "OFF"
+    offButton.BackgroundColor3 = Color3.new(1, 0, 0)
+
+    onButton.MouseButton1Click:Connect(function()
+        isFollowing = true
+    end)
+
+    offButton.MouseButton1Click:Connect(function()
+        isFollowing = false
+    end)
+
+    player.Character:SetPrimaryPartCFrame(workspace.Lobby.Teleport1.CFrame)
+
+    RunService.RenderStepped:Connect(function()
+        if isFollowing then
+            local target = Players:FindFirstChild(targetName)
+            if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character:SetPrimaryPartCFrame(target.Character.HumanoidRootPart.CFrame)
+            end
+        end
+    end)
+
+    -- Добавляем возможность перемещения GUI
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
